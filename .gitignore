@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.log
+.DS_Store
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+# Keep result placeholders but ignore generated JSON
+results/**/*.json
+results/**/*.txt
+!results/**/.gitkeep
