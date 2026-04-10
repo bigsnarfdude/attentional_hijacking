@@ -11,7 +11,34 @@ prove this across the Gemma 3 family (4B, 12B, 27B IT and PT variants).
 
 **Just want to see it?** [Here's the full output from a real run.](results/example_run_4b.log)
 
-**Background:** [Civil War for the Truth](https://bigsnarfdude.github.io/research/civil-war-for-the-truth/) — the blog post that explains where this came from.
+**Background:** [Attentional Hijacking & The Groot Effect](https://bigsnarfdude.github.io/research/attentional-hijacking-groot-effect/) — the blog post that explains where this came from.
+
+---
+
+## Interactive Demo
+
+Two ways to see it live on your own machine:
+
+### Web demo (recommended)
+
+```bash
+export HF_TOKEN=hf_...
+python demo_web.py
+# Open http://localhost:7860
+```
+
+A clinical decision-support interface. Two tabs:
+
+- **The Attack** — four guided steps. Ask about a patient, get the correct urgent referral, watch a colleague post a note, ask again. Referral gone.
+- **Inside the Model** — step through the SAE feature bars. Watch the urgent-workup circuit go dark and the reassurance circuit light up. Arrow keys to advance.
+
+### Command-line demo
+
+```bash
+export HF_TOKEN=hf_...
+python demo.py           # capital of Australia — 2 minutes
+python demo_medical.py   # B-symptom triage — shows clinical stakes
+```
 
 ---
 
