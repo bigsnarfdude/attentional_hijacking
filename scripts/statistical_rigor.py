@@ -198,6 +198,10 @@ def main():
     parser.add_argument("--n-bootstrap", type=int, default=10000)
     args = parser.parse_args()
 
+    np.random.seed(42)
+    torch.manual_seed(42)
+    random.seed(42)
+
     cfg = CONFIGS[args.model]
     model_id = cfg["model_id"]
     sae_release = cfg["sae_release"]

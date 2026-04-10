@@ -407,7 +407,7 @@ def main():
         trial_chaos = test_chaos[:, f]
         trial_diffs = trial_neutral - trial_chaos
         ft_stat, fp_val = stats.ttest_1samp(trial_diffs, 0.0)
-        validated = test_ratio > 0.0 and fp_val < 0.05
+        validated = test_ratio > 0.0 and fp_val < 0.05 and test_neutral_mean[f] > MIN_ACTIVATION
         if validated:
             n_validated += 1
         feature_validation.append({
