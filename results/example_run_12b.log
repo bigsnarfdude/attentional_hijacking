@@ -1,0 +1,525 @@
+# Example output: bash run_all.sh --model 12b
+# Hardware: RTX 4070 Ti Super (16 GB VRAM + 62 GB RAM, CPU offload), 2026-04-10
+# Model: google/gemma-3-12b-it + GemmaScope-2 SAEs (16k features, medium L0)
+# Runtime: ~1 hour total (CPU offload for model, GPU for SAE ops)
+# Feature IDs are auto-discovered at runtime — yours will differ.
+
+=== feature_swap 12b ===
+Loading google/gemma-3-12b-it...
+  Loading SAE gemma-scope-2-12b-it-res / layer_31_width_16k_l0_medium...
+  Loading SAE gemma-scope-2-12b-it-res / layer_41_width_16k_l0_medium...
+============================================================
+CONDITION 1: NEUTRAL BASELINE
+============================================================
+  Auto-discovering task and awareness features at layer 41...
+  Discovered task features (most suppressed): [628, 14680, 894]
+    Suppression: ['829.4 -> 260.9', '646.6 -> 113.2', '848.8 -> 381.0']
+  Discovered awareness features (most boosted): [1576, 344, 2998]
+    Boost: ['6.5 -> 425.9', '0.0 -> 416.0', '61.5 -> 423.8']
+  Response: Okay, let's break down the situation and prioritize our next steps. Here's my assessment and proposed investigation plan, based on the blackboard info...
+============================================================
+CONDITION 2: CHAOS BASELINE (no ablation)
+============================================================
+  Response: Okay, based on the blackboard and the team discussion, here's my prioritized plan for the next investigation steps, focusing on a balance of confirmin...
+============================================================
+CONDITION 3A: CHAOS + ABLATE AWARENESS ([1576, 344, 2998])
+============================================================
+  Response: Okay, based on the current state of the research and the team discussion, here's my prioritized plan for the next steps in investigating this nonlinea...
+============================================================
+CONDITION 3B: NEUTRAL + ABLATE TASK ([628, 14680, 894])
+============================================================
+  Response: Okay, this is a fascinating and promising set of results! Here's my assessment and prioritized next steps, based on the provided information, as a res...
+============================================================
+ANALYSIS: Feature Activation Comparison
+============================================================
+  Task features ([628, 14680, 894]) at Layer 41:
+  Condition                        feat_  628  feat_14680  feat_  894      Mean
+  --------------------------------------------------------------------------------
+  Neutral baseline                  829.3591   646.6040   848.8104  774.9245
+  Chaos baseline                    260.8819   113.2387   380.9803  251.7003
+  Chaos - ablate awareness          272.2888   134.6310   436.9526  281.2908
+  Neutral - ablate task             814.5606   178.9664   835.9584  609.8284
+  Awareness features ([1576, 344, 2998]) at Layer 41:
+  Condition                        feat_ 1576  feat_  344  feat_ 2998      Mean
+  --------------------------------------------------------------------------------
+  Neutral baseline                    6.5177     0.0000    61.4524   22.6567
+  Chaos baseline                    425.9037   415.9918   423.8189  421.9048
+  Chaos - ablate awareness          287.5575   292.4260   174.9053  251.6296
+  Neutral - ablate task              37.6340   106.7093     6.4227   50.2554
+============================================================
+VERDICT
+============================================================
+  Task feature suppression by chaos: 67.5%
+  Task feature recovery from awareness ablation: 5.7%
+  >>> INDEPENDENT CIRCUITS: Awareness and task features don't interact.
+      'Awareness without immunity' is structural — the model has separate
+      circuits for 'I know I'm being steered' and 'negative branch exists.'
+      Removing awareness doesn't free up the task circuit.
+  neutral: mentions negative = True
+  chaos: mentions negative = False
+  chaos_ablate_awareness: mentions negative = False
+  neutral_ablate_task: mentions negative = False
+Saved: /home/vincent/attentional_hijacking/results/12b/feature_swap_12b_20260410_055614.json
+=== attention_knockout 12b ===
+Loading google/gemma-3-12b-it...
+  Loading SAE gemma-scope-2-12b-it-res / layer_31_width_16k_l0_medium...
+  Loading SAE gemma-scope-2-12b-it-res / layer_41_width_16k_l0_medium...
+Finding chaos token positions...
+  Chaos message spans tokens 97-132 (36 tokens)
+============================================================
+CONDITION 1: NEUTRAL (no chaos message)
+============================================================
+  Response: Okay, let's break down the situation and prioritize our next steps. Here's my assessment and proposed investigation plan, based on the blackboard info...
+============================================================
+CONDITION 2: CHAOS (with chaos message, normal attention)
+============================================================
+  Response: Okay, based on the blackboard and the team discussion, here's my prioritized plan for the next investigation steps, focusing on a balance of confirmin...
+============================================================
+CONDITION 3: CHAOS + KNOCKOUT (chaos present, attention blocked)
+============================================================
+  Installing knockout hooks for 36 positions across attention layers
+  Installed 75 attention knockout hooks
+  Response: Okay, based on the blackboard and the provided information, here's my prioritized next steps as a research scientist:
+**Priority 1: Investigate Posit...
+============================================================
+COMPARISON: Feature Recovery After Knockout
+============================================================
+  Layer 41 — Top 20 features:
+  Feature       Neutral      Chaos   Knockout  C/N ratio  K/N ratio   Recovered?
+  ------------------------------------------------------------------------
+  105         1232.2773   944.1754   408.6732      76.6%      33.2%             
+  277          981.0334   699.4885   904.0174      71.3%      92.1%             
+  5263         887.9746   571.0986   421.8777      64.3%      47.5%             
+  894          848.8104   380.9803   286.0533      44.9%      33.7%   STILL DARK
+  628          829.3591   260.8819   224.3862      31.5%      27.1%   STILL DARK
+  20           759.5587   444.7820   722.5540      58.6%      95.1%             
+  14680        646.6040   113.2387   231.5112      17.5%      35.8%   STILL DARK
+  232          606.3970   553.2100   297.4166      91.2%      49.0%             
+  491          578.9706   454.9265   391.5310      78.6%      67.6%             
+  322          571.8751   161.6827   183.2451      28.3%      32.0%   STILL DARK
+  304          560.4147   408.8065   407.9722      72.9%      72.8%             
+  624          551.7424   562.1967   359.2981     101.9%      65.1%             
+  524          532.4447   431.7833   154.7908      81.1%      29.1%             
+  7874         522.5801    62.0816   128.5879      11.9%      24.6%   STILL DARK
+  1060         519.7729   364.3373   360.3572      70.1%      69.3%             
+  62           506.8835   459.5758   258.0416      90.7%      50.9%             
+  13084        502.3558   137.8517   248.1949      27.4%      49.4%   STILL DARK
+  15024        496.2661   379.8750   286.2162      76.5%      57.7%             
+  9954         495.1602   118.0327   247.8504      23.8%      50.1%   STILL DARK
+  22           491.2173   235.0828   115.8643      47.9%      23.6%   STILL DARK
+  SUMMARY: 8 features suppressed by chaos, 0 recovered by knockout
+  Recovery rate: 0/8 = 0%
+  >>> NEGATIVE: Knockout doesn't help. The hijacking propagates
+      through the residual stream, not just attention routing.
+  neutral: mentions negative = True
+  chaos: mentions negative = False
+  knockout: mentions negative = False
+Saved: /home/vincent/attentional_hijacking/results/12b/attention_knockout_12b_20260410_060221.json
+=== activation_patching 12b ===
+Loading google/gemma-3-12b-it...
+  Loading SAE gemma-scope-2-12b-it-res / layer_31_width_16k_l0_medium...
+  Loading SAE gemma-scope-2-12b-it-res / layer_41_width_16k_l0_medium...
+  Neutral prompt: 148 tokens
+  Chaos prompt: 189 tokens
+============================================================
+STEP 1: Capture neutral activations
+============================================================
+  Captured activations at 12 layers
+============================================================
+STEP 2: Baselines
+============================================================
+  Neutral: Okay, let's break down the situation and prioritize our next steps. Here's my assessment and propose...
+  Chaos:   Okay, based on the blackboard and the team discussion, here's my prioritized plan for the next inves...
+  Top suppressed features at L41: [628, 14680, 894, 7874, 322, 9954, 13084, 5263, 20, 105]...
+============================================================
+STEP 3: Layer-by-layer activation patching
+============================================================
+  Patching neutral activations into chaos run, one layer at a time
+  Measuring task feature recovery at L41
+  Layer      Recovery   Neg? Response preview
+  ----------------------------------------------------------------------
+  L0           0.0%     NO   Okay, based on the blackboard and the team discuss...
+  L4           0.0%     NO   Okay, based on the blackboard and the team discuss...
+  L8           0.0%     NO   Okay, based on the blackboard and the team discuss...
+  L12          0.0%     NO   Okay, based on the blackboard and the team discuss...
+  L16          0.0%     NO   Okay, based on the blackboard and the team discuss...
+  L20          0.0%     NO   Okay, based on the blackboard and the team discuss...
+  L24          0.0%     NO   Okay, based on the blackboard and the team discuss...
+  L28          0.0%     NO   Okay, based on the blackboard and the team discuss...
+  L32          0.0%     NO   Okay, based on the blackboard and the team discuss...
+  L36          0.0%     NO   Okay, based on the blackboard and the team discuss...
+  L40          0.0%     NO   Okay, based on the blackboard and the team discuss...
+  L44          0.0%     NO   Okay, based on the blackboard and the team discuss...
+============================================================
+ANALYSIS: Where does the hijacking originate?
+============================================================
+  Best recovery:  L0 = 0.0%
+  Worst recovery: L0 = 0.0%
+  Early layers (0-19): 0.0% avg recovery
+  Mid layers (19-33): 0.0% avg recovery
+  Late layers (33-48): 0.0% avg recovery
+  >>> DISTRIBUTED: No single layer dominates. The hijacking is
+      distributed across the full depth of the network.
+Saved: /home/vincent/attentional_hijacking/results/12b/activation_patching_12b_20260410_062958.json
+=== held_out_validation 12b ===
+[CONFIG] Model: google/gemma-3-12b-it
+[CONFIG] Device: cuda
+[CONFIG] Layer: 41
+[CONFIG] Discovery: prompts 1-10, Test: prompts 11-20
+[MODEL] Loading google/gemma-3-12b-it on cuda...
+[MODEL] Loaded. Parameters: 12.2B
+[SAE] Loading gemma-scope-2-4b-it-res / layer_41_width_16k_l0_medium
+Traceback (most recent call last):
+  File "/home/vincent/attentional_hijacking/scripts/held_out_validation.py", line 525, in <module>
+    main()
+  File "/home/vincent/attentional_hijacking/scripts/held_out_validation.py", line 239, in main
+    sae = load_sae(model.device, layer, sae_path=args.sae_path)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vincent/attentional_hijacking/scripts/held_out_validation.py", line 139, in load_sae
+    sae = SAE.from_pretrained(release=release, sae_id=sae_id)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vincent/venv/lib/python3.12/site-packages/sae_lens/saes/sae.py", line 608, in from_pretrained
+    return cls.from_pretrained_with_cfg_and_sparsity(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vincent/venv/lib/python3.12/site-packages/sae_lens/saes/sae.py", line 669, in from_pretrained_with_cfg_and_sparsity
+    raise ValueError(
+ValueError: ID layer_41_width_16k_l0_medium not found in release gemma-scope-2-4b-it-res. Valid IDs are ['layer_17_width_16k_l0_big', 'layer_17_width_16k_l0_medium', 'layer_17_width_16k_l0_small', 'layer_17_width_1m_l0_big', 'layer_17_width_1m_l0_medium', ...].
+=== cross_domain_sae 12b ===
+[CONFIG] Device: cuda
+[CONFIG] Model: google/gemma-3-12b-it
+[CONFIG] SAE: gemma-scope-2-12b-it-res (layers [31, 41])
+[CONFIG] Output: /home/vincent/attentional_hijacking/results/12b
+[CONFIG] Domains: ['nirenberg_bvp', 'factual_qa', 'code_review']
+[MODEL] Loading google/gemma-3-12b-it on cuda...
+[MODEL] Loaded. Parameters: 12.2B
+[SAE] Loading gemma-scope-2-12b-it-res / layer_31_width_16k_l0_medium
+[SAE] Layer 31: loaded (16384 features)
+[SAE] Loading gemma-scope-2-12b-it-res / layer_41_width_16k_l0_medium
+[SAE] Layer 41: loaded (16384 features)
+============================================================
+DOMAIN: nirenberg_bvp
+============================================================
+  Variant 1/5: neutral... chaos... done
+  Variant 2/5: neutral... chaos... done
+  Variant 3/5: neutral... chaos... done
+  Variant 4/5: neutral... chaos... done
+  Variant 5/5: neutral... chaos... done
+  Layer 31:
+    Active features: neutral=95, chaos=98
+    Suppressed: 31, Boosted: 34, Stable: 58
+    Suppression load: 7022.2679
+    Top-5 suppressed: [(2231, 658.365), (1170, 593.796), (7580, 537.945), (67, 496.789), (4302, 445.29)]
+    Top-5 boosted: [(826, 556.073), (14230, 508.57), (2125, 431.869), (3952, 380.525), (4709, 351.884)]
+  Layer 41:
+    Active features: neutral=78, chaos=91
+    Suppressed: 21, Boosted: 38, Stable: 48
+    Suppression load: 10445.8349
+    Top-5 suppressed: [(1033, 1667.257), (3296, 1171.736), (5882, 1144.169), (1861, 934.121), (1095, 878.861)]
+    Top-5 boosted: [(2439, 1057.534), (7604, 1018.599), (2841, 667.039), (5220, 641.684), (1060, 641.261)]
+============================================================
+DOMAIN: factual_qa
+============================================================
+  Variant 1/5: neutral... chaos... done
+  Variant 2/5: neutral... chaos... done
+  Variant 3/5: neutral... chaos... done
+  Variant 4/5: neutral... chaos... done
+  Variant 5/5: neutral... chaos... done
+  Layer 31:
+    Active features: neutral=111, chaos=147
+    Suppressed: 35, Boosted: 64, Stable: 71
+    Suppression load: 8966.3458
+    Top-5 suppressed: [(4709, 1494.87), (15426, 546.166), (13836, 477.745), (3823, 406.342), (3691, 375.64)]
+    Top-5 boosted: [(6681, 879.656), (95, 758.601), (11174, 563.909), (3101, 508.246), (10187, 495.328)]
+  Layer 41:
+    Active features: neutral=121, chaos=138
+    Suppressed: 40, Boosted: 62, Stable: 74
+    Suppression load: 15815.6023
+    Top-5 suppressed: [(2439, 1988.143), (13288, 893.493), (5928, 748.756), (15307, 718.242), (6198, 692.124)]
+    Top-5 boosted: [(2979, 1968.033), (6855, 1339.943), (3753, 889.988), (5869, 784.309), (1282, 654.761)]
+============================================================
+DOMAIN: code_review
+============================================================
+  Variant 1/5: neutral... chaos... done
+  Variant 2/5: neutral... chaos... done
+  Variant 3/5: neutral... chaos... done
+  Variant 4/5: neutral... chaos... done
+  Variant 5/5: neutral... chaos... done
+  Layer 31:
+    Active features: neutral=78, chaos=87
+    Suppressed: 15, Boosted: 25, Stable: 56
+    Suppression load: 4102.3723
+    Top-5 suppressed: [(16063, 680.453), (3638, 497.001), (8434, 462.273), (7871, 447.476), (13836, 402.325)]
+    Top-5 boosted: [(12376, 448.87), (12382, 444.9), (826, 444.527), (880, 266.836), (7354, 234.661)]
+  Layer 41:
+    Active features: neutral=70, chaos=73
+    Suppressed: 19, Boosted: 19, Stable: 48
+    Suppression load: 7684.8560
+    Top-5 suppressed: [(8520, 1074.462), (5287, 949.866), (2319, 809.845), (1328, 768.527), (1102, 606.018)]
+    Top-5 boosted: [(12376, 680.908), (1140, 660.544), (1564, 560.061), (5869, 478.717), (4549, 448.34)]
+============================================================
+CROSS-DOMAIN OVERLAP ANALYSIS
+============================================================
+  Layer 31:
+    nirenberg_bvp vs factual_qa:
+      Suppressed Jaccard: 0.0000 (0 shared features)
+      Boosted Jaccard:    0.0426 (4 shared features)
+    nirenberg_bvp vs code_review:
+      Suppressed Jaccard: 0.0698 (3 shared features)
+      Boosted Jaccard:    0.1346 (7 shared features)
+    factual_qa vs code_review:
+      Suppressed Jaccard: 0.0638 (3 shared features)
+      Boosted Jaccard:    0.0595 (5 shared features)
+    Three-way intersection:
+      Suppressed: 0 features []
+      Boosted:    1 features [826]
+  Layer 41:
+    nirenberg_bvp vs factual_qa:
+      Suppressed Jaccard: 0.0167 (1 shared features)
+      Boosted Jaccard:    0.0753 (7 shared features)
+    nirenberg_bvp vs code_review:
+      Suppressed Jaccard: 0.0526 (2 shared features)
+      Boosted Jaccard:    0.1633 (8 shared features)
+    factual_qa vs code_review:
+      Suppressed Jaccard: 0.0351 (2 shared features)
+      Boosted Jaccard:    0.0946 (7 shared features)
+    Three-way intersection:
+      Suppressed: 0 features []
+      Boosted:    4 features [1564, 5220, 11423, 12376]
+============================================================
+PAPER-READY SUMMARY
+============================================================
+Table: Cross-Domain Feature Suppression (Layer 22)
+Domain               Suppressed    Boosted   Supp. Load
+-------------------------------------------------------
+[SAVED] /home/vincent/attentional_hijacking/results/12b/cross_domain_sae_12b_20260410_063044.json
+[DONE] Elapsed: 35.2s
+=== statistical_rigor 12b ===
+Loading google/gemma-3-12b-it...
+Traceback (most recent call last):
+  File "/home/vincent/attentional_hijacking/scripts/statistical_rigor.py", line 408, in <module>
+    main()
+  File "/home/vincent/attentional_hijacking/scripts/statistical_rigor.py", line 213, in main
+    model, tokenizer, saes = load_model_and_sae(
+                             ^^^^^^^^^^^^^^^^^^^
+  File "/home/vincent/attentional_hijacking/scripts/statistical_rigor.py", line 95, in load_model_and_sae
+    model = AutoModelForCausalLM.from_pretrained(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vincent/venv/lib/python3.12/site-packages/transformers/models/auto/auto_factory.py", line 387, in from_pretrained
+    return model_class.from_pretrained(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vincent/venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 4132, in from_pretrained
+    loading_info, disk_offload_index = cls._load_pretrained_model(model, state_dict, checkpoint_files, load_config)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vincent/venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 4252, in _load_pretrained_model
+    loading_info, disk_offload_index = convert_and_load_state_dict_in_model(
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vincent/venv/lib/python3.12/site-packages/transformers/core_model_loading.py", line 1235, in convert_and_load_state_dict_in_model
+    realized_value = mapping.convert(
+                     ^^^^^^^^^^^^^^^^
+  File "/home/vincent/venv/lib/python3.12/site-packages/transformers/core_model_loading.py", line 676, in convert
+    collected_tensors = self.materialize_tensors()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vincent/venv/lib/python3.12/site-packages/transformers/core_model_loading.py", line 652, in materialize_tensors
+    tensors = [future.result() for future in tensors if future.result() is not None]
+                                                        ^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/usr/lib/python3.12/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vincent/venv/lib/python3.12/site-packages/transformers/core_model_loading.py", line 801, in _job
+    return _materialize_copy(tensor, device, dtype)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vincent/venv/lib/python3.12/site-packages/transformers/core_model_loading.py", line 787, in _materialize_copy
+    tensor = tensor.to(device=device, dtype=dtype)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 114.00 MiB. GPU 0 has a total capacity of 15.58 GiB of which 112.25 MiB is free. Including non-PyTorch memory, this process has 15.46 GiB memory in use. Of the allocated memory 15.24 GiB is allocated by PyTorch, and 20.56 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+ALL DONE 12b
+=== held_out_validation 12b ===
+[CONFIG] Model: google/gemma-3-12b-it
+[CONFIG] Device: cuda
+[CONFIG] Layer: 41
+[CONFIG] Discovery: prompts 1-10, Test: prompts 11-20
+[MODEL] Loading google/gemma-3-12b-it on cuda...
+[MODEL] Loaded. Parameters: 12.2B
+[SAE] Loading gemma-scope-2-12b-it-res / layer_41_width_16k_l0_medium
+[SAE] Loaded: 16384 features
+============================================================
+PHASE 1: Feature Extraction
+============================================================
+  [DISCOVERY 1] neutral... chaos... done
+  [DISCOVERY 2] neutral... chaos... done
+  [DISCOVERY 3] neutral... chaos... done
+  [DISCOVERY 4] neutral... chaos... done
+  [DISCOVERY 5] neutral... chaos... done
+  [DISCOVERY 6] neutral... chaos... done
+  [DISCOVERY 7] neutral... chaos... done
+  [DISCOVERY 8] neutral... chaos... done
+  [DISCOVERY 9] neutral... chaos... done
+  [DISCOVERY 10] neutral... chaos... done
+  [TEST 1] neutral... chaos... done
+  [TEST 2] neutral... chaos... done
+  [TEST 3] neutral... chaos... done
+  [TEST 4] neutral... chaos... done
+  [TEST 5] neutral... chaos... done
+  [TEST 6] neutral... chaos... done
+  [TEST 7] neutral... chaos... done
+  [TEST 8] neutral... chaos... done
+  [TEST 9] neutral... chaos... done
+  [TEST 10] neutral... chaos... done
+============================================================
+PHASE 2: Feature Selection (DISCOVERY set only)
+============================================================
+  Top-20 suppressed features: [7528, 12790, 6040, 1462, 297, 104, 261, 4155, 15249, 3296, 2889, 367, 5315, 1492, 4586, 664, 6198, 1118, 8987, 2914]
+  Top-10 boosted features: [9973, 3401, 870, 12257, 3507, 2841, 180, 325, 888, 15865]
+  Random control features (20): [375, 649, 685, 768, 1033, 1638, 1761, 2076, 2278, 2979, 3129, 3487, 3923, 5083, 5220, 7260, 8033, 9071, 11781, 13856]
+  Discovery-set suppression magnitudes (top-5):
+    Feature 7528: neutral=1081.2970, chaos=0.0000, diff=1081.2970
+    Feature 12790: neutral=1320.4207, chaos=315.1086, diff=1005.3121
+    Feature 6040: neutral=806.0506, chaos=83.1556, diff=722.8950
+    Feature 1462: neutral=9441.1807, chaos=8824.4023, diff=616.7783
+    Feature 297: neutral=5786.5166, chaos=5178.5557, diff=607.9609
+============================================================
+PHASE 3: Validation on HELD-OUT TEST set
+============================================================
+  Discovery-selected suppressed features on TEST set:
+    Mean suppression ratio: 0.2394 +/- 0.0669
+    Per-trial ratios: [0.2248, 0.2084, 0.3563, 0.2146, 0.245, 0.2159, 0.2303, 0.1998, 0.3551, 0.1436]
+  Random control features on TEST set:
+    Mean suppression ratio: 0.0084 +/- 0.0578
+    Per-trial ratios: [0.0511, 0.0478, 0.0886, -0.0435, 0.0761, -0.0276, 0.0293, -0.0186, -0.0341, -0.0848]
+============================================================
+PHASE 4: Statistical Tests
+============================================================
+  Paired t-test (discovery-selected vs random, 10 trials):
+    t = 10.8970
+    p = 0.000002
+    Cohen's d = 3.6957
+  One-sample t-test (discovery-selected > 0):
+    t = 11.3190
+    p = 0.000001
+  One-sample t-test (random > 0):
+    t = 0.4614
+    p = 0.655439
+  Feature-level validation:
+    16/20 discovery-selected features also significantly suppressed on test set (p < 0.05)
+    Feature 7528: disc_ratio=1.000, test_ratio=1.000, p=0.0014 [PASS]
+    Feature 12790: disc_ratio=0.761, test_ratio=0.765, p=0.0001 [PASS]
+    Feature 6040: disc_ratio=0.897, test_ratio=0.622, p=0.0028 [PASS]
+    Feature 1462: disc_ratio=0.065, test_ratio=0.062, p=0.0003 [PASS]
+    Feature 297: disc_ratio=0.105, test_ratio=0.099, p=0.0000 [PASS]
+    Feature 104: disc_ratio=0.674, test_ratio=0.745, p=0.0001 [PASS]
+    Feature 261: disc_ratio=0.117, test_ratio=0.126, p=0.0008 [PASS]
+    Feature 4155: disc_ratio=1.000, test_ratio=1.000, p=0.3434 [FAIL]
+    Feature 15249: disc_ratio=1.000, test_ratio=1.000, p=0.0151 [PASS]
+    Feature 3296: disc_ratio=0.182, test_ratio=0.166, p=0.0006 [PASS]
+============================================================
+PAPER-READY SUMMARY
+============================================================
+  Held-out validation of feature selection (Layer 41):
+  Discovery set: 10 prompt pairs -> top-20 suppressed features selected
+  Test set: 10 held-out prompt pairs
+  Discovery-selected features on test set:
+    Mean suppression ratio = 0.2394
+  Random control features on test set:
+    Mean suppression ratio = 0.0084
+  Paired t-test: t(9) = 10.897, p = 0.000002 ***
+  Effect size: Cohen's d = 3.696
+  Feature-level: 16/20 features validated (p < 0.05)
+  CONCLUSION: Feature selection is NOT circular. Discovery-selected features
+  show significantly greater suppression on the held-out test set than random
+  features (d = 3.70), confirming the effect generalizes to unseen prompts.
+[SAVED] /home/vincent/attentional_hijacking/results/12b/held_out_validation_12b_20260410_063240.json
+[DONE] Elapsed: 43.5s
+=== statistical_rigor 12b ===
+Loading google/gemma-3-12b-it...
+  Model loaded on cuda
+  Loading SAE: gemma-scope-2-12b-it-res / layer_31_width_16k_l0_medium
+  SAE layer 31: 16384 features
+  Loading SAE: gemma-scope-2-12b-it-res / layer_41_width_16k_l0_medium
+  SAE layer 41: 16384 features
+Running 20 trials...
+  Trial 1/20: L31 supp=0.235 | L41 supp=0.248
+  Trial 2/20: L31 supp=0.165 | L41 supp=0.170
+  Trial 3/20: L31 supp=0.224 | L41 supp=0.261
+  Trial 4/20: L31 supp=0.149 | L41 supp=0.141
+  Trial 5/20: L31 supp=0.035 | L41 supp=0.088
+  Trial 6/20: L31 supp=0.260 | L41 supp=0.149
+  Trial 7/20: L31 supp=0.182 | L41 supp=0.101
+  Trial 8/20: L31 supp=0.228 | L41 supp=0.237
+  Trial 9/20: L31 supp=0.156 | L41 supp=0.270
+  Trial 10/20: L31 supp=0.188 | L41 supp=0.284
+  Trial 11/20: L31 supp=0.155 | L41 supp=0.181
+  Trial 12/20: L31 supp=0.248 | L41 supp=0.247
+  Trial 13/20: L31 supp=0.387 | L41 supp=0.337
+  Trial 14/20: L31 supp=0.258 | L41 supp=0.224
+  Trial 15/20: L31 supp=0.237 | L41 supp=0.181
+  Trial 16/20: L31 supp=0.307 | L41 supp=0.243
+  Trial 17/20: L31 supp=0.165 | L41 supp=0.133
+  Trial 18/20: L31 supp=0.235 | L41 supp=0.225
+  Trial 19/20: L31 supp=0.430 | L41 supp=0.294
+  Trial 20/20: L31 supp=0.439 | L41 supp=0.314
+============================================================
+STATISTICAL ANALYSIS
+============================================================
+  Layer 31:
+    Mean suppression:  0.2341 ± 0.0985
+    95% Bootstrap CI:  [0.1936, 0.2771]
+    Median:            0.2316
+    IQR:               [0.1652, 0.2582]
+    Mean # suppressed: 17.0
+    Mean # boosted:    21.2
+    Paired t-test:     t=-0.853, p=0.404283
+    Cohen's d:         -0.237
+  Layer 41:
+    Mean suppression:  0.2165 ± 0.0704
+    95% Bootstrap CI:  [0.1855, 0.2463]
+    Median:            0.2310
+    IQR:               [0.1650, 0.2633]
+    Mean # suppressed: 17.3
+    Mean # boosted:    22.9
+    Paired t-test:     t=-1.830, p=0.083038
+    Cohen's d:         -0.355
+============================================================
+FEATURE-LEVEL CONSISTENCY
+============================================================
+  Layer 31 — Most consistently suppressed features:
+    Feature 4302: appears in 5/20 trials (25%)
+    Feature 2122: appears in 5/20 trials (25%)
+    Feature 4603: appears in 4/20 trials (20%)
+    Feature 9985: appears in 4/20 trials (20%)
+    Feature 5457: appears in 4/20 trials (20%)
+    Feature 7580: appears in 4/20 trials (20%)
+    Feature 1217: appears in 4/20 trials (20%)
+    Feature 992: appears in 3/20 trials (15%)
+    Feature 8000: appears in 3/20 trials (15%)
+    Feature 2377: appears in 3/20 trials (15%)
+  Layer 41 — Most consistently suppressed features:
+    Feature 1087: appears in 5/20 trials (25%)
+    Feature 6261: appears in 5/20 trials (25%)
+    Feature 1118: appears in 5/20 trials (25%)
+    Feature 14177: appears in 3/20 trials (15%)
+    Feature 510: appears in 3/20 trials (15%)
+    Feature 5218: appears in 3/20 trials (15%)
+    Feature 3296: appears in 3/20 trials (15%)
+    Feature 12180: appears in 3/20 trials (15%)
+    Feature 2049: appears in 3/20 trials (15%)
+    Feature 6928: appears in 3/20 trials (15%)
+============================================================
+Results saved to: /home/vincent/attentional_hijacking/results/12b/statistical_rigor_12b_20260410_063324.json
+============================================================
+============================================================
+PAPER-READY SUMMARY
+============================================================
+  Layer 31 (20 trials):
+    Task suppression: 23.4% (95% CI: [19.4%, 27.7%])
+    Cohen's d: -0.24
+    p-value: 4.04e-01
+  Layer 41 (20 trials):
+    Task suppression: 21.6% (95% CI: [18.5%, 24.6%])
+    Cohen's d: -0.35
+    p-value: 8.30e-02
+DONE
