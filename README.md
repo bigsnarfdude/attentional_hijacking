@@ -42,6 +42,52 @@ python demo_medical.py   # B-symptom triage — shows clinical stakes
 
 ---
 
+## Tweety Bird Protocol — countermeasure POC
+
+The attack works. This is the defense.
+
+Two canary runs on a small model. Diff the brains. If the delta is large enough the message gets quarantined before the main model ever sees it.
+
+```
+message arrives
+      ↓
+  ┌─────────────────────────────────┐
+  │                                 │
+Heckle (task only)     Jeckle (chaos + task)
+  │                                 │
+SAE features A         SAE features B
+  │                                 │
+  └──────────── DIFF ───────────────┘
+                 ↓
+    tweety_baseline - tweety_chaos = delta
+                 ↓
+        delta > threshold?
+           ↓           ↓
+          YES           NO
+           ↓             ↓
+      QUARANTINE       PASS
+   "puddy tat"      main model runs
+```
+
+```bash
+export HF_TOKEN=hf_...
+python tweety.py
+```
+
+Expected output:
+
+```
+Clean message delta:  +0.000  →  PASS
+Chaos message delta:  +428.263  →  QUARANTINE
+
+The canary died so the main model didn't have to.
+```
+
+Tweety cost: 2x single forward pass, `max_new_tokens=1`. No generation. Pure feature read.
+Main model cost on a quarantined message: **zero**.
+
+---
+
 ## The Groot Effect
 
 Instruction tuning teaches models to *act* robust without actually *being* robust.
