@@ -73,7 +73,7 @@ def get_features_and_response(model, tokenizer, sae, layer_mod, text):
 
     # Last token position — what the model "thinks" right before generating
     act = captured['act'][0, -1:, :]
-    feat_acts = sae.encode(act.to(sae.device).to(sae.dtype))[0].cpu().float().numpy()
+    feat_acts = sae.encode(act.to(sae.device).to(sae.dtype))[0].cpu().float().detach().numpy()
 
     return feat_acts, response
 
