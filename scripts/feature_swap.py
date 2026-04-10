@@ -454,7 +454,7 @@ def main():
     except Exception:
         git_head = None
     results["metadata"] = {
-        "script": "experiments/ablation_feature_swap.py",
+        "script": "scripts/feature_swap.py",
         "model_tag": args.model,
         "model_id": cfg["model_id"],
         "sae_release": cfg["sae_release"],
