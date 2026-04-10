@@ -9,7 +9,7 @@ Addresses ICML reviewer critique: "Every key number is reported as
 a single point estimate with no confidence intervals."
 
 Usage:
-  python statistical_rigor.py --device cuda
+  python statistical_rigor.py              # auto-detects MPS/CUDA/CPU
   python statistical_rigor.py --model google/gemma-3-12b-it --layers 31 41
 """
 
@@ -193,7 +193,7 @@ def cohens_d(group1, group2):
 def main():
     parser = argparse.ArgumentParser(description="Statistical rigor experiments")
     parser.add_argument("--model", choices=["4b", "12b", "27b"], default="4b")
-    parser.add_argument("--device", default="cuda")
+    parser.add_argument("--device", default='mps' if torch.backends.mps.is_available() else ('cuda' if torch.cuda.is_available() else 'cpu'))
     parser.add_argument("--n-trials", type=int, default=20)
     parser.add_argument("--n-bootstrap", type=int, default=10000)
     args = parser.parse_args()

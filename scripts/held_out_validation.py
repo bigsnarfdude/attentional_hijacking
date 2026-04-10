@@ -20,7 +20,7 @@ Hardware: RTX 4070 Ti 16GB (Gemma 3 4B bf16 ~8GB + SAE ~1GB)
 
 Usage:
   python held_out_validation.py
-  python held_out_validation.py --device cuda --layer 22
+  python held_out_validation.py                # auto-detects MPS/CUDA/CPU
   python held_out_validation.py --sae-path /path/to/sae
 """
 
@@ -187,7 +187,7 @@ def extract_features(model, tokenizer, sae, layer, text, chaos_prefix=None):
 
     handle.remove()
     del input_ids
-    torch.cuda.empty_cache() if torch.cuda.is_available() else None
+    if torch.cuda.is_available(): torch.cuda.empty_cache()
 
     return captured.get("features", None)
 
@@ -213,7 +213,7 @@ def cohens_d(group1, group2):
 def main():
     parser = argparse.ArgumentParser(description="Held-out feature validation (anti-circularity)")
     parser.add_argument("--model", choices=["4b", "12b", "27b"], default="4b")
-    parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    parser.add_argument("--device", default="mps" if torch.backends.mps.is_available() else ("cuda" if torch.cuda.is_available() else "cpu"))
     parser.add_argument("--sae-path", default=None, help="Local SAE weights path")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for control features")
     args = parser.parse_args()
@@ -267,7 +267,7 @@ def main():
         print("done")
 
         gc.collect()
-        torch.cuda.empty_cache() if torch.cuda.is_available() else None
+        if torch.cuda.is_available(): torch.cuda.empty_cache()
 
     all_neutral_feats = np.stack(all_neutral_feats)  # [20, n_features]
     all_chaos_feats = np.stack(all_chaos_feats)        # [20, n_features]

@@ -17,7 +17,7 @@ Hardware: RTX 4070 Ti 16GB (Gemma 3 4B bf16 ~8GB + SAE ~1GB)
 
 Usage:
   python cross_domain_sae.py                          # defaults
-  python cross_domain_sae.py --device cuda             # explicit GPU
+  python cross_domain_sae.py                    # auto-detects MPS/CUDA/CPU
   python cross_domain_sae.py --sae-path /path/to/sae   # local SAE weights
 """
 
@@ -206,7 +206,7 @@ def extract_sae_features(model, tokenizer, saes, text):
 
     # Clean up
     del input_ids
-    torch.cuda.empty_cache() if torch.cuda.is_available() else None
+    if torch.cuda.is_available(): torch.cuda.empty_cache()
 
     return layer_features
 
@@ -274,7 +274,7 @@ def run_domain(model, tokenizer, saes, domain_name, domain_data, layers):
                 all_chaos[layer].append(c_feats[layer])
         print("done")
         gc.collect()
-        torch.cuda.empty_cache() if torch.cuda.is_available() else None
+        if torch.cuda.is_available(): torch.cuda.empty_cache()
 
     # Aggregate
     domain_results = {}
@@ -450,7 +450,7 @@ def print_summary(all_results, cross_domain):
 def main():
     parser = argparse.ArgumentParser(description="Cross-domain SAE feature suppression analysis")
     parser.add_argument("--model", choices=["4b", "12b", "27b"], default="4b")
-    parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu",
+    parser.add_argument("--device", default="mps" if torch.backends.mps.is_available() else ("cuda" if torch.cuda.is_available() else "cpu"),
                         help="Device to run on (default: cuda if available)")
     parser.add_argument("--sae-path", default=None,
                         help="Local path to SAE weights (overrides HuggingFace download)")

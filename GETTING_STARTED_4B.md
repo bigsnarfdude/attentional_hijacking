@@ -1,12 +1,23 @@
 # Getting Started — Gemma 3 4B
 
-Fastest path to results. Runs on a single consumer GPU.
+Fastest path to results. Runs on a Mac laptop or a single consumer GPU.
+No cluster needed.
+
+> Background: [Civil War for the Truth](https://bigsnarfdude.github.io/research/civil-war-for-the-truth/)
 
 ## Hardware
 
-- GPU: 16 GB VRAM (RTX 4070 Ti, RTX 3090, A10, etc.)
-- RAM: 32 GB
+**Mac (Apple Silicon):**
+- MacBook Pro / Mac Studio with M2, M3, or M4
+- 16 GB unified memory minimum (24 GB comfortable)
 - Disk: ~15 GB for model + SAE weights
+
+**Linux / Windows GPU:**
+- 16 GB VRAM (RTX 4070 Ti, RTX 3090, A10, etc.)
+- RAM: 32 GB
+- Disk: ~15 GB
+
+Device is auto-detected — no flags needed on either platform.
 
 ## Setup
 

@@ -12,21 +12,26 @@ which is exactly the attack surface this exploits.
 This repo contains the six core experiments that demonstrate and characterize the
 mechanism, across Gemma 3 4B, 12B, and 27B (IT and PT variants).
 
+**Background:** [Civil War for the Truth](https://bigsnarfdude.github.io/research/civil-war-for-the-truth/) — the blog post that explains where this finding came from.
+
 ---
 
 ## Hardware requirements
 
 | Model | Minimum VRAM | Recommended |
 |-------|-------------|-------------|
-| 4B    | 16 GB       | RTX 4070 Ti / A10 |
+| 4B    | 16 GB unified (Mac M-series) or 16 GB VRAM | MacBook Pro M2/M3/M4, RTX 4070 Ti |
 | 12B   | 40 GB       | A100 40GB |
 | 27B   | 80 GB       | H100 80GB |
+
+**Mac users: 4B runs on Apple Silicon.** M2/M3/M4 with 16 GB unified memory
+handles 4B + SAEs without any flags — device is auto-detected.
 
 Each script loads one model + two SAE layers simultaneously.
 
 ---
 
-## Quick start (4B, ~2 hours total)
+## Quick start (4B — Mac or GPU, ~2 hours total)
 
 ```bash
 # 1. Clone and install
@@ -41,6 +46,7 @@ export HF_TOKEN=hf_...
 bash run_all.sh --model 4b
 ```
 
+Device is auto-detected — MPS on Mac, CUDA on Linux/Windows, CPU as fallback.
 Results land in `results/4b/`. Each script prints a plain-English verdict to stdout.
 
 ### Run experiments individually
