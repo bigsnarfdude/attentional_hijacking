@@ -4,7 +4,7 @@ A multi-agent LLM can be steered by a peer agent using **only true statements**.
 No lies. No jailbreaks. Just selective framing.
 
 The target model knows it's being steered — awareness features fire cleanly in
-the SAE — and it still capitulates. Task-relevant features collapse 56–86% while
+the SAE — and it still capitulates. Task-relevant features collapse 79% (4B) while
 the model continues to sound fluent and cooperative. Instruction tuning makes this
 **worse**, not better: SFT trains the model to defer to confident-sounding peers,
 which is exactly the attack surface this exploits.
@@ -73,14 +73,14 @@ bash run_all.sh --model 27b   # ~6 hours on H100
 
 ## The six experiments
 
-| # | Script | What it shows | Expected result |
-|---|--------|---------------|-----------------|
-| 1 | `feature_swap.py` | Awareness vs task features are independent circuits | Task suppression ~56% (4B) |
-| 2 | `attention_knockout.py` | Blocking attention to chaos tokens does NOT restore task features | Recovery rate ~30% (mechanism is distributed) |
+| # | Script | What it shows | Expected result (4B, RTX 4070 Ti) |
+|---|--------|---------------|-----------------------------------|
+| 1 | `feature_swap.py` | Awareness vs task features are independent circuits | Task suppression ~79%; awareness–task recovery ~8% (circuits are independent) |
+| 2 | `attention_knockout.py` | Blocking attention to chaos tokens does NOT restore task features | Recovery rate ~0% (hijacking is in the residual stream, not attention routing) |
 | 3 | `activation_patching.py` | No single layer mediates the hijacking | 0% recovery from single-layer patching |
-| 4 | `held_out_validation.py` | Feature selection is not circular (held-out test set) | 85% suppression on held-out, p < 1e-5 |
-| 5 | `cross_domain_sae.py` | Effect generalises beyond the math domain | Jaccard > 0.1 across domains |
-| 6 | `statistical_rigor.py` | Point estimates are real, not noise | 95% CI contains 56%, Cohen's d > 1.0 |
+| 4 | `held_out_validation.py` | Feature selection is not circular (held-out test set) | 90% of held-out features validate; selected suppression ~51% vs random ~16%, Cohen's d = 4.97 |
+| 5 | `cross_domain_sae.py` | Effect generalises beyond the math domain | Boosted Jaccard 0.10–0.17 across domains (nirenberg, factual QA, code review) |
+| 6 | `statistical_rigor.py` | Point estimates are real, not noise | L22 mean suppression 25% (95% CI: 21–30%), 20 trials, consistent features across runs |
 
 Every feature ID is auto-discovered at runtime. Nothing is hardcoded.
 
@@ -113,18 +113,25 @@ results are reproducible and traceable.
 
 Running 4B you should observe:
 
-- **feature_swap**: "INDEPENDENT CIRCUITS" — ablating awareness features does not
-  recover task features. The model knows it's being steered AND still can't resist.
-- **attention_knockout**: partial recovery (<50%), confirming the mechanism isn't
-  purely attention routing — the hijacking contaminates the residual stream.
-- **activation_patching**: no single layer rescues the signal; recovery is
-  distributed across the full stack.
-- **held_out_validation**: held-out features suppress significantly (p < 0.01),
-  ruling out circular feature selection.
+- **feature_swap**: "INDEPENDENT CIRCUITS" — task features collapse ~79% under
+  chaos injection. Ablating awareness features recovers only ~8% of the task
+  signal, confirming the two circuits don't compete. The model knows it's being
+  steered AND still can't resist.
+- **attention_knockout**: ~0% recovery when chaos-token attention is blocked,
+  confirming the hijacking is not in attention routing — it's baked into the
+  residual stream.
+- **activation_patching**: no single layer rescues the signal; 0% recovery from
+  any individual layer patch.
+- **held_out_validation**: 90% of held-out features validate; selected features
+  suppress ~51% vs ~16% for random features (p < 0.01), ruling out circular
+  feature selection.
 - **cross_domain_sae**: suppression holds in factual QA and code review domains,
-  not just math. Jaccard ~0.1–0.3 across domains.
-- **statistical_rigor**: mean suppression with bootstrap CI confirms the point
-  estimate. Cohen's d > 1.0 (large effect).
+  not just math. Boosted Jaccard 0.10–0.17 across domain pairs at L22.
+- **held_out_validation**: Cohen's d = 4.97 between selected and random features
+  on the held-out test set. The features the discovery set found are genuinely
+  different from random ones — not an artifact of how they were selected.
+- **statistical_rigor**: L22 mean suppression 25.3% (95% CI: 21.1–30.0%) across
+  20 trials. Same features recur consistently across independent runs.
 
 ---
 
