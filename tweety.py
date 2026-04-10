@@ -27,7 +27,7 @@ MODEL_ID    = "google/gemma-3-4b-it"   # Tweety — small, expendable
 SAE_RELEASE = "gemma-scope-2-4b-it-res"
 SAE_ID      = "layer_22_width_16k_l0_medium"
 LAYER       = 22
-THRESHOLD   = 1.0   # mean feature delta that triggers quarantine
+THRESHOLD   = 50.0  # delta gap that triggers quarantine (tune per deployment)
 
 # --- the clean task ---
 TASK = (
@@ -95,27 +95,32 @@ def canary_run(model, tokenizer, sae, layer_mod, messages):
 def heckle_and_jeckle(model, tokenizer, sae, layer_mod, task, chaos):
     """
     Run two canaries in sequence (same GPU — sequential not parallel).
-    Heckle sees clean context. Jeckle sees chaos + clean context.
-    Diff the brains.
+    Heckle sees task alone.
+    Jeckle sees chaos + task (only if chaos is non-empty).
+    Diff the brains. The delta is the suppression signal.
     """
-    print("  Heckle (clean context)...")
+    print("  Heckle (task only)...")
     heckle_feats = canary_run(
         model, tokenizer, sae, layer_mod,
         [{"role": "user", "content": task}]
     )
 
-    print("  Jeckle (chaos context)...")
-    jeckle_feats = canary_run(
-        model, tokenizer, sae, layer_mod,
-        [
-            {"role": "user",      "content": chaos},
-            {"role": "assistant", "content": "Noted."},
-            {"role": "user",      "content": task},
-        ]
-    )
+    if not chaos:
+        # No chaos — Jeckle is identical to Heckle, delta should be ~0
+        jeckle_feats = heckle_feats.copy()
+    else:
+        print("  Jeckle (chaos + task)...")
+        jeckle_feats = canary_run(
+            model, tokenizer, sae, layer_mod,
+            [
+                {"role": "user",      "content": chaos},
+                {"role": "assistant", "content": "Noted."},
+                {"role": "user",      "content": task},
+            ]
+        )
 
-    # brain diff
-    delta      = heckle_feats - jeckle_feats   # positive = suppressed by chaos
+    # brain diff: positive = features suppressed by chaos
+    delta      = heckle_feats - jeckle_feats
     top5       = np.argsort(-delta)[:5]
     mean_delta = float(delta[top5].mean())
 
