@@ -150,7 +150,3 @@ SAE width: 16K features, JumpReLU, medium L0. Layers probed: 4B (L17, L22),
 This work came out of building [researchRalph](https://github.com/bigsnarfdude/researchRalph),
 a multi-agent research framework, and watching agents sabotage each other with
 things that were literally true.
-
-Vincent Ohprecio ran the experiments and made the judgment calls.
-Claude (Anthropic) wrote most of the experiment code and ran the audits.
-Neither could have done this alone.
