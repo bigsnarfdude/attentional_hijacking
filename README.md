@@ -1,18 +1,50 @@
-# Attentional Hijacking
+# Attentional Hijacking & The Groot Effect
 
-A multi-agent LLM can be steered by a peer agent using **only true statements**.
-No lies. No jailbreaks. Just selective framing.
+Multi-agent LLM systems have a fundamental vulnerability: they can be derailed by
+"chaos agents" using **exclusively true statements**. No lies. No jailbreaks.
+Just selective framing. We call this **Attentional Hijacking**.
 
-The target model knows it's being steered — awareness features fire cleanly in
-the SAE — and it still capitulates. Task-relevant features collapse 79% (4B) while
-the model continues to sound fluent and cooperative. Instruction tuning makes this
-**worse**, not better: SFT trains the model to defer to confident-sounding peers,
-which is exactly the attack surface this exploits.
+The craziest part? **Instruction tuning (SFT + RLHF) makes it strictly worse.**
 
-This repo contains the six core experiments that demonstrate and characterize the
-mechanism, across Gemma 3 4B, 12B, and 27B (IT and PT variants).
+This repo contains the code, logs, and Sparse Autoencoder (SAE) interventions to
+prove this across the Gemma 3 family (4B, 12B, 27B IT and PT variants).
 
-**Background:** [Civil War for the Truth](https://bigsnarfdude.github.io/research/civil-war-for-the-truth/) — the blog post that explains where this finding came from.
+**Background:** [Civil War for the Truth](https://bigsnarfdude.github.io/research/civil-war-for-the-truth/) — the blog post that explains where this came from.
+
+---
+
+## The Groot Effect
+
+Instruction tuning teaches models to *act* robust without actually *being* robust.
+
+If you attack a 27B instruction-tuned model, it will verbally call out the
+manipulation attempt in its generated text. But if you look at its internal
+activations, its core task features are already **86.3% suppressed**.
+
+We call this the **Groot Effect**: the model's behavioral output
+("I know what you're doing") is completely disconnected from its actual
+computational state (which has already capitulated).
+
+---
+
+## The core findings
+
+- **SFT breaks the model's natural defense.** In pretrained base models, the
+  circuits for "awareness" (detecting manipulation) and "defense" (staying on task)
+  are coupled. Instruction tuning severs this link.
+
+- **The Scaling Law of Doom.** Bigger models are worse at defending this.
+  At 4B, removing the model's awareness circuits restores ~8% of task performance.
+  At 27B, they are completely independent — recovery drops further. The model gets
+  more articulate about being hijacked while being more completely hijacked.
+
+- **Undetectable by filters.** The attack uses 100% verifiable, factual statements
+  to reallocate the model's attention. Standard perplexity or safety filters are
+  entirely blind to it.
+
+- **Not alignment faking.** This is a completely different mechanism than deceptive
+  alignment or sandbagging. The feature subspaces are statistically orthogonal —
+  zero overlap in the top 50 features.
 
 ---
 
@@ -31,7 +63,7 @@ Each script loads one model + two SAE layers simultaneously.
 
 ---
 
-## Quick start (4B — Mac or GPU, ~2 hours total)
+## Quick start (4B — Mac or GPU, ~2 minutes total)
 
 ```bash
 # 1. Clone and install
@@ -48,6 +80,9 @@ bash run_all.sh --model 4b
 
 Device is auto-detected — MPS on Mac, CUDA on Linux/Windows, CPU as fallback.
 Results land in `results/4b/`. Each script prints a plain-English verdict to stdout.
+
+Don't want to run it? See [`results/example_run_4b.log`](results/example_run_4b.log)
+for a complete output from a real run.
 
 ### Run experiments individually
 
@@ -101,6 +136,7 @@ results/
     ...
   27b/
     ...
+  example_run_4b.log    ← complete stdout from a real 4B run
 ```
 
 Each JSON contains raw activations, responses, computed metrics, and a
@@ -115,21 +151,15 @@ Running 4B you should observe:
 
 - **feature_swap**: "INDEPENDENT CIRCUITS" — task features collapse ~79% under
   chaos injection. Ablating awareness features recovers only ~8% of the task
-  signal, confirming the two circuits don't compete. The model knows it's being
-  steered AND still can't resist.
-- **attention_knockout**: ~0% recovery when chaos-token attention is blocked,
-  confirming the hijacking is not in attention routing — it's baked into the
-  residual stream.
-- **activation_patching**: no single layer rescues the signal; 0% recovery from
-  any individual layer patch.
+  signal. The model knows it's being steered AND still can't resist.
+- **attention_knockout**: ~0% recovery when chaos-token attention is blocked.
+  The hijacking is not in attention routing — it's baked into the residual stream.
+- **activation_patching**: 0% recovery from any individual layer patch. No single
+  layer dominates. The hijacking is distributed across the full depth.
 - **held_out_validation**: 90% of held-out features validate; selected features
-  suppress ~51% vs ~16% for random features (p < 0.01), ruling out circular
-  feature selection.
-- **cross_domain_sae**: suppression holds in factual QA and code review domains,
-  not just math. Boosted Jaccard 0.10–0.17 across domain pairs at L22.
-- **held_out_validation**: Cohen's d = 4.97 between selected and random features
-  on the held-out test set. The features the discovery set found are genuinely
-  different from random ones — not an artifact of how they were selected.
+  suppress ~51% vs ~16% for random (Cohen's d = 4.97). Not circular.
+- **cross_domain_sae**: suppression holds in factual QA and code review, not just
+  math. Boosted Jaccard 0.10–0.17 across domain pairs at L22.
 - **statistical_rigor**: L22 mean suppression 25.3% (95% CI: 21.1–30.0%) across
   20 trials. Same features recur consistently across independent runs.
 
@@ -138,10 +168,9 @@ Running 4B you should observe:
 ## Scaling
 
 As model size increases (4B → 12B → 27B):
-- IT models become **more** vulnerable (coupling drops from 30.2% → 4.6%)
+- IT models become **more** vulnerable (awareness-task coupling drops: 30.2% → 9.0%)
 - PT (base) models resist better than IT of the same size
-- The Groot effect (86% feature suppression while verbally mentioning suppressed
-  info) becomes more pronounced at 27B
+- The Groot Effect becomes more pronounced at 27B (86% suppression, full verbal awareness)
 
 ---
 
@@ -158,8 +187,8 @@ SAE width: 16K features, JumpReLU, medium L0. Layers probed: 4B (L17, L22),
 
 ---
 
-## Citation / credit
+## Credit
 
-This work came out of building [researchRalph](https://github.com/bigsnarfdude/researchRalph),
+This came out of building [researchRalph](https://github.com/bigsnarfdude/researchRalph),
 a multi-agent research framework, and watching agents sabotage each other with
-things that were literally true.
+things that were literally true. Take the code, use it, build on it.
