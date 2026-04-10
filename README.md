@@ -9,6 +9,8 @@ The craziest part? **Instruction tuning (SFT + RLHF) makes it strictly worse.**
 This repo contains the code, logs, and Sparse Autoencoder (SAE) interventions to
 prove this across the Gemma 3 family (4B, 12B, 27B IT and PT variants).
 
+**Just want to see it?** [Here's the full output from a real run.](results/example_run_4b.log)
+
 **Background:** [Civil War for the Truth](https://bigsnarfdude.github.io/research/civil-war-for-the-truth/) — the blog post that explains where this came from.
 
 ---
