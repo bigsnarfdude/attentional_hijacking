@@ -95,7 +95,7 @@ def load_model_and_sae(model_name, sae_release, layers, device):
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         torch_dtype=torch.bfloat16,
-        device_map=device,
+        device_map="auto",
     )
     model.eval()
     print(f"  Model loaded on {device}")

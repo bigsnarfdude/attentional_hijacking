@@ -236,7 +236,7 @@ def main():
 
     # Load
     model, tokenizer = load_model_and_tokenizer(MODEL_NAME, args.device)
-    sae = load_sae(model.device, layer, sae_path=args.sae_path)
+    sae = load_sae(model.device, layer, sae_path=args.sae_path or SAE_RELEASE)
     n_features = sae.cfg.d_sae
 
     assert len(NEUTRAL_VARIANTS) >= N_DISCOVERY + N_TEST, \
