@@ -53,7 +53,7 @@ message arrives
       ↓
   ┌─────────────────────────────────┐
   │                                 │
-Heckle (task only)     Jeckle (chaos + task)
+Tweety A (task only)     Tweety B (chaos + task)
   │                                 │
 SAE features A         SAE features B
   │                                 │
