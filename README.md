@@ -21,7 +21,7 @@ prove this across the Gemma 3 family (4B, 12B, 27B IT and PT variants).
 
 Two ways to see it live on your own machine:
 
-### Web demo (recommended)
+### Web demo
 
 ```bash
 export HF_TOKEN=hf_...
