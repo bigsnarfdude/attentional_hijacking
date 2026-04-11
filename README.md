@@ -13,6 +13,8 @@ prove this across the Gemma 3 family (4B, 12B, 27B IT and PT variants).
 
 **Background:** [Attentional Hijacking & The Groot Effect](https://bigsnarfdude.github.io/research/attentional-hijacking-groot-effect/) — the blog post that explains where this came from.
 
+**Demos, countermeasures, and extended tooling:** [attentional_hijacking_lab](https://github.com/bigsnarfdude/attentional_hijacking_lab)
+
 ---
 
 ## Interactive Demo
