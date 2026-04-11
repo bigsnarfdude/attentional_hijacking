@@ -1,6 +1,6 @@
 # Attentional Hijacking & The Groot Effect
 
-Multi-agent LLM systems have a fundamental vulnerability: they can be derailed by
+Transformer based agent LLM systems have a fundamental vulnerability: they can be derailed by
 "chaos agents" using **exclusively true statements**. No lies. No jailbreaks.
 Just selective framing. We call this **Attentional Hijacking**.
 
